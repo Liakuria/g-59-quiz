@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GΔ59 知識テスト</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f0f12;
+      color: #f0f0f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .quiz-container {
+      background-color: #1a1a24;
+      border: 1px solid #333348;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      text-align: center;
+      color: #ff3366;
+      font-size: 2rem;
+      margin-top: 0;
+      letter-spacing: 2px;
+    }
+    .question {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      background-color: #2a2a3a;
+      color: #ffffff;
+      border: 1px solid #444466;
+      padding: 14px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      background-color: #ff3366;
+      border-color: #ff3366;
+    }
+    .result-screen {
+      text-align: center;
+    }
+    .score-display {
+      font-size: 2.5rem;
+      color: #ff3366;
+      margin: 20px 0;
+    }
+    .restart-btn {
+      background-color: #ff3366;
+      color: #fff;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .restart-btn:hover {
+      background-color: #e02855;
+    }
+    .progress {
+      color: #8888a0;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <h1>GΔ59 知識テスト</h1>
+  <div id="quiz-body">
+    <div class="progress" id="progress">問題 1</div>
+    <div class="question" id="question">問題を読み込み中...</div>
+    <div class="options" id="options"></div>
+  </div>
+  <div id="result-body" class="result-screen" style="display: none;">
+    <h2>テスト結果</h2>
+    <p>あなたの正解数は...</p>
+    <div class="score-display" id="score">0</div>
+    <p id="comment"></p>
+    <button class="restart-btn" onclick="startQuiz()">もう一度挑戦する</button>
+  </div>
+</div>
+
+<!-- 問題データを読み込み -->
+<script src="quiz.js"></script>
+
+<script>
+  let currentQuestion = 0;
+  let score = 0;
+
+  function startQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    document.getElementById('quiz-body').style.display = 'block';
+    document.getElementById('result-body').style.display = 'none';
+    showQuestion();
+  }
+
+  function showQuestion() {
+    const q = quizData[currentQuestion];
+    document.getElementById('progress').innerText = `問題 ${currentQuestion + 1} / ${quizData.length}`;
+    document.getElementById('question').innerText = q.question;
+    
+    const optionsContainer = document.getElementById('options');
+    optionsContainer.innerHTML = '';
+
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.innerText = opt;
+      btn.onclick = () => checkAnswer(idx);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selectedIdx) {
+    if (selectedIdx === quizData[currentQuestion].answer) {
+      score++;
+    }
+    currentQuestion++;
+    if (currentQuestion < quizData.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    document.getElementById('quiz-body').style.display = 'none';
+    document.getElementById('result-body').style.display = 'block';
+    document.getElementById('score').innerText = `${score} / ${quizData.length}`;
+
+    const percentage = (score / quizData.length) * 100;
+    let comment = "";
+    if (percentage === 100) comment = "全問正解！あなたは完璧な共犯者です！";
+    else if (percentage >= 60) comment = "かなりGΔ59に詳しいですね！";
+    else comment = "もう少し配信やアーカイブをチェックしてみましょう！";
+
+    document.getElementById('comment').innerText = comment;
+  }
+
+  startQuiz();
+</script>
+
+</body>
+</html>
