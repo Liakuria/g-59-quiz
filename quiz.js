@@ -14,6 +14,7 @@ const quizData = [
     question: "宵闇めぇの誕生日は？",
     options: ["3/18","3/2","3/24","3/30"],
     answer: 0
+  },
   // 【入力問題の例】
   {
     type: "input",
