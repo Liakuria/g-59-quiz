@@ -33,6 +33,11 @@
       margin-top: 0;
       letter-spacing: 2px;
     }
+    .subtitle {
+      text-align: center;
+      color: #a0a0b8;
+      margin-bottom: 25px;
+    }
     .question {
       font-size: 1.2rem;
       margin-bottom: 20px;
@@ -58,6 +63,47 @@
       background-color: #ff3366;
       border-color: #ff3366;
     }
+    .level-btn {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    /* 入力フォーム用スタイル */
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .text-input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #444466;
+      background-color: #12121a;
+      color: #ffffff;
+      font-size: 1.1rem;
+      box-sizing: border-box;
+    }
+    .text-input:focus {
+      outline: none;
+      border-color: #ff3366;
+    }
+    .submit-btn {
+      background-color: #ff3366;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: center;
+    }
+    .submit-btn:hover {
+      background-color: #e02855;
+    }
+
     .result-screen {
       text-align: center;
     }
@@ -75,6 +121,7 @@
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
+      margin-top: 15px;
     }
     .restart-btn:hover {
       background-color: #e02855;
@@ -83,6 +130,8 @@
       color: #8888a0;
       font-size: 0.9rem;
       margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
     }
   </style>
 </head>
@@ -90,58 +139,143 @@
 
 <div class="quiz-container">
   <h1>GΔ59 知識テスト</h1>
-  <div id="quiz-body">
-    <div class="progress" id="progress">問題 1</div>
-    <div class="question" id="question">問題を読み込み中...</div>
-    <div class="options" id="options"></div>
+
+  <!-- 1. 難易度選択画面 -->
+  <div id="start-screen">
+    <p class="subtitle">挑戦する難易度を選択してください（全10問）</p>
+    <div class="options">
+      <button class="btn level-btn" onclick="selectLevel('easy')">🟢 簡単（ビギナー向け）</button>
+      <button class="btn level-btn" onclick="selectLevel('normal')">🟡 普通（共犯者レベル）</button>
+      <button class="btn level-btn" onclick="selectLevel('hard')">🔴 難しい（ガチ勢向け）</button>
+    </div>
   </div>
+
+  <!-- 2. クイズ画面 -->
+  <div id="quiz-body" style="display: none;">
+    <div class="progress">
+      <span id="progress-text">問題 1 / 10</span>
+      <span id="level-badge" style="color: #ff3366;"></span>
+    </div>
+    <div class="question" id="question">問題を読み込み中...</div>
+    
+    <!-- 4択用の領域 -->
+    <div class="options" id="options"></div>
+
+    <!-- 入力フォーム用の領域 -->
+    <div class="input-container" id="input-container" style="display: none;">
+      <input type="text" id="user-answer" class="text-input" placeholder="回答を入力してください" autocomplete="off" onkeydown="if(event.key==='Enter') checkInputAnswer()">
+      <button class="submit-btn" onclick="checkInputAnswer()">回答する</button>
+    </div>
+  </div>
+
+  <!-- 3. 結果画面 -->
   <div id="result-body" class="result-screen" style="display: none;">
     <h2>テスト結果</h2>
     <p>あなたの正解数は...</p>
-    <div class="score-display" id="score">0</div>
+    <div class="score-display" id="score">0 / 10</div>
     <p id="comment"></p>
-    <button class="restart-btn" onclick="startQuiz()">もう一度挑戦する</button>
+    <button class="restart-btn" onclick="showStartScreen()">難易度を選び直す</button>
   </div>
 </div>
 
-<!-- 問題データを読み込み -->
 <script src="quiz.js"></script>
 
 <script>
+  const QUESTION_COUNT = 10;
+  let activeQuizList = [];
   let currentQuestion = 0;
   let score = 0;
+  let currentLevelLabel = "";
 
-  function startQuiz() {
+  function showStartScreen() {
+    document.getElementById('start-screen').style.display = 'block';
+    document.getElementById('quiz-body').style.display = 'none';
+    document.getElementById('result-body').style.display = 'none';
+  }
+
+  function selectLevel(selectedLevel) {
+    const filteredQuestions = quizData.filter(q => q.levels && q.levels.includes(selectedLevel));
+
+    if (filteredQuestions.length === 0) {
+      alert("この難易度の問題がありません。");
+      return;
+    }
+
+    const shuffled = [...filteredQuestions].sort(() => Math.random() - 0.5);
+    activeQuizList = shuffled.slice(0, QUESTION_COUNT);
+
+    if (selectedLevel === 'easy') currentLevelLabel = '簡単';
+    else if (selectedLevel === 'normal') currentLevelLabel = '普通';
+    else if (selectedLevel === 'hard') currentLevelLabel = '難しい';
+
     currentQuestion = 0;
     score = 0;
+
+    document.getElementById('start-screen').style.display = 'none';
     document.getElementById('quiz-body').style.display = 'block';
-    document.getElementById('result-body').style.display = 'none';
+    
     showQuestion();
   }
 
   function showQuestion() {
-    const q = quizData[currentQuestion];
-    document.getElementById('progress').innerText = `問題 ${currentQuestion + 1} / ${quizData.length}`;
+    const q = activeQuizList[currentQuestion];
+    document.getElementById('progress-text').innerText = `問題 ${currentQuestion + 1} / ${activeQuizList.length}`;
+    document.getElementById('level-badge').innerText = `[難易度: ${currentLevelLabel}]`;
     document.getElementById('question').innerText = q.question;
-    
-    const optionsContainer = document.getElementById('options');
-    optionsContainer.innerHTML = '';
 
-    q.options.forEach((opt, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.innerText = opt;
-      btn.onclick = () => checkAnswer(idx);
-      optionsContainer.appendChild(btn);
-    });
+    const optionsContainer = document.getElementById('options');
+    const inputContainer = document.getElementById('input-container');
+
+    // 出題タイプで表示切り替え
+    if (q.type === 'choice') {
+      optionsContainer.style.display = 'flex';
+      inputContainer.style.display = 'none';
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkChoiceAnswer(idx);
+        optionsContainer.appendChild(btn);
+      });
+    } else if (q.type === 'input') {
+      optionsContainer.style.display = 'none';
+      inputContainer.style.display = 'flex';
+      const inputEl = document.getElementById('user-answer');
+      inputEl.value = '';
+      inputEl.focus(); // 入力欄に自動フォーカス
+    }
   }
 
-  function checkAnswer(selectedIdx) {
-    if (selectedIdx === quizData[currentQuestion].answer) {
+  // 4択の判定
+  function checkChoiceAnswer(selectedIdx) {
+    if (selectedIdx === activeQuizList[currentQuestion].answer) {
       score++;
     }
+    nextQuestion();
+  }
+
+  // 入力問題の判定
+  function checkInputAnswer() {
+    const inputEl = document.getElementById('user-answer');
+    const userVal = inputEl.value.trim().toLowerCase(); // 空白除去 & 小文字化
+
+    if (!userVal) return; // 空文字は無視
+
+    const q = activeQuizList[currentQuestion];
+    // 正解リストのいずれかに一致するか確認（大文字小文字/空白を無視）
+    const isCorrect = q.answers.some(ans => ans.trim().toLowerCase() === userVal);
+
+    if (isCorrect) {
+      score++;
+    }
+    nextQuestion();
+  }
+
+  function nextQuestion() {
     currentQuestion++;
-    if (currentQuestion < quizData.length) {
+    if (currentQuestion < activeQuizList.length) {
       showQuestion();
     } else {
       showResult();
@@ -151,18 +285,21 @@
   function showResult() {
     document.getElementById('quiz-body').style.display = 'none';
     document.getElementById('result-body').style.display = 'block';
-    document.getElementById('score').innerText = `${score} / ${quizData.length}`;
+    
+    const total = activeQuizList.length;
+    document.getElementById('score').innerText = `${score} / ${total}`;
 
-    const percentage = (score / quizData.length) * 100;
+    const percentage = (score / total) * 100;
     let comment = "";
-    if (percentage === 100) comment = "全問正解！あなたは完璧な共犯者です！";
-    else if (percentage >= 60) comment = "かなりGΔ59に詳しいですね！";
-    else comment = "もう少し配信やアーカイブをチェックしてみましょう！";
+    if (percentage === 100) comment = `【${currentLevelLabel}】全問正解！完璧な知識です！`;
+    else if (percentage >= 70) comment = `【${currentLevelLabel}】素晴らしい！かなり詳しいですね！`;
+    else if (percentage >= 40) comment = `【${currentLevelLabel}】健闘しました！もう少しで高得点です。`;
+    else comment = `【${currentLevelLabel}】配信や動画をおさらいして再挑戦してみましょう！`;
 
     document.getElementById('comment').innerText = comment;
   }
 
-  startQuiz();
+  showStartScreen();
 </script>
 
 </body>
