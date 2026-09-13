@@ -23,6 +23,12 @@ const quizData = [
     // 正解の表記揺れ（全角・半角・カタカナ等）を配列で複数登録できます
     answers: ["じごく", "ジゴク", "jigoku"] 
   },
+    {
+    "type": "input",
+    "levels": ["hard"],
+    "question": "甘噛こんこんの総合タグは？",
+    "answers": ["こんこん日和"]
+  },
 
   {
     type: "input",
