@@ -26,6 +26,12 @@ const quizData = [
     {
     "type": "input",
     "levels": ["hard"],
+    "question": "東京仮装の情報員のロールの名前は？",
+    "answers": ["管理者の鍵"]
+  },
+    {
+    "type": "input",
+    "levels": ["hard"],
     "question": "甘噛こんこんの総合タグは？",
     "answers": ["こんこん日和"]
   },
